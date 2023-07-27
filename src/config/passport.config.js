@@ -8,6 +8,9 @@ import dtoUser from "../dto/user.js";
 
 import CartManager from "../dao/mongo/manager/CartManagerMongo.js";
 import UserManager from "../dao/mongo/manager/UserManagerMongo.js";
+import ErrorService from "../services/ErrorService.js";
+import { userErrorIncompleteValues } from "../constants/usersErrors.js";
+import EErrors from "../constants/EErrors.js";
 
 const userManager = new UserManager();
 const cartManager = new CartManager();
@@ -20,7 +23,15 @@ const initializePassport = ()=>{
         try{
             const {first_name,last_name} = req.body;
             const exist = await userModel.findOne({email});
-            if(exist) return done(null,false,{message:'este usuario ya existe'});
+            if(exist) return done(null,false,{message:'este usuario ya existe'});   
+            if(!first_name||!last_name||!email||!password){
+                ErrorService.createError({
+                    name:"Error de creacion de usuario",
+                    cause: userErrorIncompleteValues({first_name,last_name,email,password}),
+                    message: 'Error intentando registrar el usuario',
+                    code: EErrors.INCOMPLETE_VALUES
+                })
+            }
             const hashedPassword = await createHash(password);//encriptamos la contraseña
             const user = new dtoUser(
                 {

@@ -1,4 +1,7 @@
+import EErrors from '../constants/EErrors.js';
+import { productErrorIncompleteValues } from '../constants/productsErrors.js';
 import ProductManagerMongo from '../dao/mongo/manager/ProductManagerMongo.js';
+import ErrorService from '../services/ErrorService.js';
 const productManager = new ProductManagerMongo();
 
 const getProducts = async (req, res) => {
@@ -62,7 +65,14 @@ const createProduct = async (req, res) => {
       const { title, description, price, category, thumbnail, code, stock } = req.body;
       const products = await productManager.getProducts();
       const productExist = req.body;
-      if(!title||!description||!price||!category||!thumbnail||!code) return res.status(400).send({status:"error",error:"Valores incompletos",title,description,price,category,thumbnail,code})
+      if(!title||!description||!price||!category||!thumbnail||!code){
+        ErrorService.createError({
+            name:"Error de creacion de un nuevo producto",
+            cause: productErrorIncompleteValues({title,description,price,category,thumbnail,code}),
+            message: 'Error intentando crear un nuevo producto',
+            code: EErrors.INCOMPLETE_VALUES
+        })
+    }
       const exist = products.find( p => p.code === productExist.code)
       if(exist){
         console.log('el producto ya existe')

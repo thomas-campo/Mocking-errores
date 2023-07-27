@@ -21,6 +21,8 @@ import mockRouter from "./routes/mock.router.js"
 import sessionsRouter from "./routes/sessions.router.js"
 import initializePassport from "./config/passport.config.js";
 
+import errorHandler from "./middlewares/error.js"
+
 import __dirname from './utils.js';
 
 const app = express();
@@ -58,6 +60,8 @@ app.use('/api/products',productsRouterMongo);
 app.use('/api/carts',cartRouterMongo);
 app.use('/api/sessions',sessionsRouter);
 app.use('/mockingproducts',mockRouter)
+
+app.use(errorHandler);
 
 io.on('connection',async socket=>{
     const arrayProducts =  await productManager.getProducts();
